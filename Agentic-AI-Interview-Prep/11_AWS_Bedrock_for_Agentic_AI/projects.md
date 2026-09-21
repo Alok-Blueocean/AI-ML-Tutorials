@@ -1,0 +1,17 @@
+# AWS Bedrock for Agentic AI — Projects
+
+## Small: Guarded FAQ Agent over a Knowledge Base
+
+Build a single Bedrock agent (AgentCore harness, or Agents Classic if your account is allowlisted) with one Knowledge Base built over 20-30 of your own documents (a product manual, internal policy docs, or a set of public regulatory PDFs) and one Guardrail attached with a denied-topics policy, a sensitive-information filter, and a contextual grounding check tuned to block ungrounded answers. Wrap it behind a simple CLI or Streamlit UI. This proves you can wire together the three most commonly asked-about pieces (agent, knowledge base, guardrail) into one working system and explain the specific config choices (chunking strategy, grounding threshold, which PII types to mask) rather than just naming the features.
+
+## Medium: Action-Group Agent with Return-of-Control and an Evaluation Harness
+
+Build an agent with at least two action groups: one that auto-executes via Lambda, and one configured for return of control that requires a human-approval step in your client app before the action fires (model a "refund approval" or "send email" action). Add an automated evaluation loop: an automatic model-evaluation job comparing two candidate generator models on your actual task, plus an LLM-as-a-judge evaluation scoring correctness and faithfulness on a held-out prompt set, run as a repeatable script (not just console clicks). This proves you understand both the human-in-the-loop pattern that production agentic systems need for anything consequential, and that you evaluate quantitatively before swapping models rather than eyeballing outputs.
+
+## Large: Bedrock-Managed Stack vs. Self-Built LangGraph — a Side-by-Side Comparison Build
+
+Implement the same agentic workflow twice against the same underlying task (e.g., a support-ticket triage-and-respond agent with two tools and one knowledge source): once using Bedrock's managed stack (AgentCore or Agents Classic + Guardrails + Knowledge Bases), and once using LangGraph with your own vector store, your own guardrail logic (e.g., a simple denied-topics regex/LLM-classifier layer), and your own tracing. Instrument both with comparable observability (Bedrock/AgentCore Observability vs. LangGraph + an OTEL exporter), run the same RAG evaluation question set through both (Bedrock's built-in RAG evaluation for one, a Ragas/DeepEval harness for the other), and produce a written comparison covering build time, per-request cost, latency, and what broke differently in each. This is the single strongest interview artifact for this topic: it turns "I'd recommend Bedrock or a custom stack depending on the situation" from an opinion into something you measured yourself.
+
+## Bonus/Small: Guardrail Red-Team Harness
+
+Build a small automated test harness (a Python script, not console clicks) that fires a curated set of adversarial prompts — direct policy violations, paraphrased/indirect violations, prompt-injection attempts, and PII-bearing inputs disguised as normal questions — against a configured Guardrail via `ApplyGuardrail`, logs which policy blocked what (or didn't), and produces a pass/fail report. Re-run the same harness after switching the guardrail from Classic to Standard tier and diff the results. This proves you treat guardrail configuration as something you test and regress against, not something you configure once and trust.

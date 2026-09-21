@@ -1,0 +1,41 @@
+# Scenario-Based Q&A — Attention and Transformers
+
+## 1. "Explain why we divide by √d_k" (the most common Transformer derivation question)
+**Situation:** In a technical interview, you're asked to derive why scaled dot-product attention divides the `QK^T` product by `√d_k` instead of using the raw dot product.
+
+**What would you do and why:** I'd explain that for random query/key vectors with components of unit variance, the dot product `q·k` is a sum of `d_k` independent terms, so its variance grows linearly with `d_k` — meaning raw attention scores get larger in magnitude as the head dimension increases. Large-magnitude inputs push softmax toward a near one-hot output (the largest score dominates), which makes the softmax's gradient with respect to its inputs vanish almost everywhere, stalling learning. Dividing by `√d_k` rescales the variance back to approximately 1 regardless of dimensionality, keeping softmax in a well-conditioned regime independent of head size — this is why the scaling factor is `√d_k` specifically, not `d_k` or a fixed constant.
+
+## 2. Model produces near-identical outputs for reordered inputs
+**Situation:** You built a Transformer-based document classifier and notice that shuffling the sentence order in a document barely changes the model's output, even though sentence order should matter for this task.
+
+**What would you do and why:** I'd first check whether positional encoding is actually being applied — self-attention itself is permutation-invariant, so if positional information is missing, dropped during a preprocessing step, or the position embedding table isn't the right size for the input length, the model has no way to distinguish "A then B" from "B then A." I'd verify this by inspecting the embedding pipeline (are position IDs added correctly, is there an off-by-one or truncation bug), and confirm with a controlled test — feed the model two known-different-order versions of an input and check the intermediate embeddings differ before the first attention layer.
+
+## 3. Long-document model runs out of memory
+**Situation:** You need to run a Transformer over 20,000-token documents, and training crashes with an out-of-memory error that doesn't occur on shorter documents.
+
+**What would you do and why:** This is the O(n²) attention memory wall — doubling sequence length quadruples the attention score matrix's memory footprint. I'd first try a memory-efficient exact-attention implementation (FlashAttention/FlashAttention-2), which reduces memory from quadratic to near-linear by avoiding materializing the full attention matrix, without changing the model's outputs. If that's insufficient, I'd move to an architectural change: chunk the document and use sliding-window/local attention, or a hierarchical approach (summarize chunks, then attend over chunk summaries), explicitly trading some long-range interaction fidelity for tractable memory use. I'd also check whether the task actually needs full document-level attention or whether a retrieval-augmented approach (retrieve relevant spans, attend only over those) sidesteps the problem entirely.
+
+## 4. Choosing encoder-only vs. decoder-only vs. encoder-decoder
+**Situation:** You're designing a system and need to justify why you'd choose a BERT-style encoder, a GPT-style decoder, or a T5-style encoder-decoder for a given task.
+
+**What would you do and why:** For tasks that require understanding a fixed input and producing a label or span from it (classification, extractive QA, NER), an encoder-only model (BERT-style) is the natural fit since it can attend bidirectionally over the whole input with no generation needed. For open-ended text generation where output must be produced left-to-right and only conditioned on prior context (chat, completion), a decoder-only model (GPT-style) with causal masking is the right choice and dominates in practice due to simplicity and scaling behavior. For tasks that transform one sequence into a genuinely different one (translation, summarization) I'd lean toward an encoder-decoder (T5/BART-style), where the encoder gets full bidirectional context on the source and the decoder's cross-attention explicitly looks up relevant source information while generating — though in practice, large decoder-only models have absorbed many of these use cases too, so I'd also weigh available pretrained checkpoints and engineering simplicity.
+
+## 5. Training is slow and a teammate suggests switching an LSTM pipeline to a Transformer
+**Situation:** Your team's LSTM-based sequence model takes days to train on a large dataset, and a colleague proposes switching to a Transformer to speed things up.
+
+**What would you do and why:** I'd agree this is usually the right instinct for a training-time bottleneck: an RNN processes a sequence strictly step by step (`O(n)` sequential operations), so it cannot parallelize across the time dimension even with a large GPU, whereas self-attention computes all pairwise interactions in one shot (`O(1)` sequential steps), letting the whole sequence be processed in parallel per training step. I'd flag the tradeoff honestly, though: attention's `O(n²)` memory/compute means this speedup depends on sequence length staying manageable, and for very long sequences the switch could trade a training-time problem for a memory problem — so I'd benchmark both wall-clock time and peak memory on a representative sequence length before committing.
+
+## 6. Attention weights don't match human intuition
+**Situation:** After training a Transformer classifier, you visualize attention weights expecting them to highlight the "important" words for the prediction, but they look diffuse or attend heavily to punctuation/special tokens.
+
+**What would you do and why:** I'd caution the team that attention weights are not a reliable, guaranteed explanation of model reasoning — multiple heads and layers combine, later layers can re-weight earlier signal, and some heads are known to act as "no-op" attention sinks (attending heavily to `[CLS]`/`[SEP]`/punctuation) as a learned mechanism rather than a sign of malfunction. If interpretability is the actual goal, I'd use a dedicated method (integrated gradients, SHAP, or probing classifiers) rather than raw attention maps, and only use attention visualization as a debugging aid (e.g., confirming cross-attention aligns source/target words in translation) rather than as a ground-truth explanation.
+
+## 7. Fine-tuning a pretrained Transformer overfits fast on a small dataset
+**Situation:** You fine-tune `bert-base` on a 2,000-example internal support-ticket classification dataset, and validation loss starts increasing after 1 epoch while training loss keeps dropping.
+
+**What would you do and why:** Large pretrained Transformers have hundreds of millions of parameters and can overfit very small fine-tuning datasets within a single epoch. I'd reduce the learning rate (typical fine-tuning rates are 1e-5 to 5e-5, much lower than training from scratch), use fewer epochs with early stopping on validation loss, freeze most of the backbone and only fine-tune the top few layers plus the classification head, and add dropout on the classifier head. If data volume allows, I'd also consider a smaller distilled model (DistilBERT) which is less prone to overfitting at this data scale and cheaper to serve.
+
+## 8. Positional encoding choice for a task with variable-length, very long sequences
+**Situation:** You're designing a Transformer for genomic sequences that can be tens of thousands of tokens long, and the original sinusoidal positional encoding scheme performs poorly at lengths far beyond what was seen in training.
+
+**What would you do and why:** Fixed absolute positional encodings (sinusoidal or learned) are trained/defined for a maximum length and generalize poorly to significantly longer sequences at inference. I'd switch to a relative positional encoding scheme (e.g., RoPE — rotary position embeddings, or ALiBi — attention with linear biases), both of which encode relative distance between tokens rather than absolute position and are designed specifically to extrapolate better to unseen sequence lengths. I'd validate the choice empirically by testing extrapolation to lengths beyond the training distribution before committing.

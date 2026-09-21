@@ -1,0 +1,17 @@
+# Exercises — Model Evaluation and Overfitting
+
+1. **(Easy, conceptual)** Define bias and variance in your own words and give one real example of a high-bias model and one high-variance model.
+2. **(Easy, coding)** Split a dataset into train/val/test (60/20/20). Train a model only on train, tune one hyperparameter using val, and report final performance on test exactly once.
+3. **(Easy, coding)** Run `StratifiedKFold` vs. plain `KFold` on an imbalanced binary dataset (e.g., 5% positive class) and print the class balance in each fold for both — observe the difference.
+4. **(Medium, coding)** Implement `TimeSeriesSplit` (walk-forward CV) on a time-indexed dataset and compare its CV score to a plain shuffled `KFold`'s CV score on the same data. Explain the gap.
+5. **(Medium, coding)** Build a confusion matrix, then compute precision, recall, F1, and accuracy by hand from the matrix (no sklearn metric functions) to confirm you understand the formulas.
+6. **(Medium, coding)** On an imbalanced dataset, plot both a ROC curve and a Precision-Recall curve for the same model. Compute ROC-AUC and PR-AUC. Explain why they tell different stories.
+7. **(Medium, conceptual)** Explain why MAPE can become unstable or misleading, with a concrete numeric example where actual values are near zero.
+8. **(Medium, coding)** Plot learning curves (train/val error vs. training set size) for a model that is underfitting and for one that is overfitting (e.g., a linear model vs. an unpruned deep decision tree on the same small dataset). Label which is which and justify from the curve shape.
+9. **(Medium, coding)** Run `GridSearchCV` and `RandomizedSearchCV` with the same total budget (e.g., 30 fits) over a 4-hyperparameter space for a gradient boosting model. Compare best validation scores and wall-clock time.
+10. **(Hard, coding)** Implement nested cross-validation by hand (outer loop for performance estimation, inner loop for hyperparameter tuning via grid search) for a regularized classifier, and compare the resulting performance estimate to a naive "tune and report on the same CV folds" approach — quantify the optimism gap.
+11. **(Hard, coding)** Take a small tabular dataset (<1000 rows) with high-cardinality categorical columns. Overfit a model using plain target encoding (no smoothing/out-of-fold), then fix it with out-of-fold target encoding or smoothing, and show the reduction in the train/val performance gap.
+12. **(Hard, coding)** Train a small neural network on a small image or tabular dataset without any regularization until it overfits (train acc ~100%, val acc plateaus/drops). Then apply, one at a time: dropout, early stopping, L2 weight decay, and data augmentation (if images). Report the incremental effect of each.
+13. **(Hard, conceptual)** A model achieves 0.93 ROC-AUC in cross-validation but only 0.60 in production three months after launch, with no code changes. List at least 4 distinct root causes you'd investigate, in priority order.
+14. **(Hard, conceptual)** Derive/explain why the bias-variance decomposition implies "you cannot minimize both bias and variance simultaneously by tuning complexity alone" — and describe two techniques that reduce variance *without* increasing bias much (hint: more data, ensembling).
+15. **(Hard, coding)** Build a Bayesian hyperparameter search (e.g., with Optuna) for an XGBoost model and compare the number of trials needed to reach a given validation score versus random search, on the same search space.

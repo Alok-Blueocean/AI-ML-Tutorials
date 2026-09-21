@@ -1,0 +1,16 @@
+# Exercises — Ensemble Methods: Bagging and Boosting
+
+1. **(Easy, coding)** Train a single decision tree and a `RandomForestClassifier` (100 trees) on the same dataset. Compare train/test accuracy and explain the gap difference between the two.
+2. **(Easy, conceptual)** Explain in one paragraph why bagging reduces variance but not bias, using the averaging-of-independent-errors argument.
+3. **(Easy, coding)** Train a Random Forest and compare its `oob_score_` to a separate held-out test-set score. How close are they, and why should they be close in theory?
+4. **(Medium, coding)** Implement AdaBoost from scratch (decision stumps + sample reweighting + weighted majority vote) on a small binary classification dataset, and compare accuracy to `sklearn.ensemble.AdaBoostClassifier`.
+5. **(Medium, conceptual)** Explain why boosting is more prone to overfitting than bagging, and name two hyperparameters in gradient boosting that directly control this risk.
+6. **(Medium, coding)** Train `GradientBoostingClassifier`, `XGBClassifier`, and `LGBMClassifier` on the same tabular dataset with default-ish settings. Compare accuracy, training time, and memory/behavior on a dataset with a high-cardinality categorical column (encode manually for XGB/sklearn, pass natively to LightGBM/CatBoost where supported).
+7. **(Medium, conceptual)** Derive (at a high level) why using both gradient and Hessian (second-order information) in XGBoost's split-gain formula gives a better approximation of the optimal leaf weight than using the gradient alone.
+8. **(Medium, coding)** Tune `num_leaves`, `max_depth`, and `min_data_in_leaf` for a LightGBM model on a small dataset (<10k rows) to demonstrate how leaf-wise growth overfits if left unconstrained, then find a configuration that generalizes.
+9. **(Medium, coding)** Compare CatBoost's native categorical handling against manual one-hot encoding + XGBoost on a dataset with several high-cardinality categorical columns. Measure both accuracy and training time.
+10. **(Hard, coding)** Build a stacking ensemble: train 3 diverse base models (e.g., logistic regression, random forest, gradient boosting), generate out-of-fold predictions for each, then train a meta-model (logistic regression) on those OOF predictions. Compare the stacked model's test performance to the best individual base model.
+11. **(Hard, coding)** Implement simple blending (single holdout split) as an alternative to the stacking pipeline from Exercise 10, and compare the two approaches' test performance and data efficiency.
+12. **(Hard, coding)** Compute and compare gain-based feature importance, permutation importance, and SHAP values for the same trained XGBoost model. Identify at least one feature where the three methods disagree, and explain why.
+13. **(Hard, conceptual)** A colleague adds a high-cardinality ID-like feature to a gradient boosting model and it shows up as the #1 feature by gain importance. Explain why this is suspicious and what you'd do to verify whether it's a real signal or an overfitting artifact.
+14. **(Hard, coding)** Benchmark training time and peak memory of XGBoost (histogram method) vs. LightGBM on a dataset with at least 1 million rows. Report the difference and connect it to their respective internal optimizations (histogram binning, GOSS, EFB, leaf-wise growth).

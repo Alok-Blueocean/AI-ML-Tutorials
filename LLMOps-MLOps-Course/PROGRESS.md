@@ -1,0 +1,51 @@
+# Course Generation Progress
+
+Source plan file: `C:\Users\arl\.claude\plans\twinkling-floating-kahn.md` (26-module list + full spec lives there — read it first in a new session).
+
+Output root: `C:\Users\arl\Music\Tutorial\LLMOps-MLOps-Course\`
+Each module folder should end up with exactly 10 files: tutorial.md, architecture.md, exercises.md, quiz.md, cheat_sheet.md, projects.md, videos.md, books.md, github.md, references.md.
+
+## SCOPE CHANGE (2026-07-31)
+
+Original session hit its token/session limit partway through Batch 2. User then explicitly descoped the remaining course to control cost:
+- **Priority (full depth)**: only modules 14 (Observability), 18 (Tracing/Debugging Agentic Systems), 19 (Drift Detection/Retraining) — because the user's actual goal is continuous monitoring, drift analysis, and observability for ongoing accuracy/reliability/robustness. These three get ONLY 4 files each: tutorial.md, exercises.md, references.md, projects.md (no architecture.md/quiz.md/cheat_sheet.md/videos.md/books.md/github.md).
+- **Everything else not yet done**: just ONE brief, easy-to-understand tutorial.md (800-1500 words, plain language, no deep research) — NOT the full 10-file mega-treatment.
+- Modules 01-06 (already fully done, 10/10 files) and 07-13 (discovered to already have complete full-depth tutorial.md + videos/books/github/references.md, even though the workflow tool reported their agent calls as "failed" — the files were written before the connection dropped, only the final confirmation return failed) are LEFT AS-IS. Do not regenerate or shrink them — they're sunk cost and already good.
+- Module 12 also already has architecture.md + exercises.md as a bonus from a lucky partial run; left as-is, no further action needed on it.
+- Run ID for this rescoped work: `wf_8a2a23fb-8d7`, script: `C:\Users\arl\.claude\projects\C--Users-arl-Music-Tutorial\d7cbe3a0-218e-4cf2-8334-f332dc93d061\workflows\scripts\llmops-course-monitoring-focus-wf_8a2a23fb-8d7.js`. Resume via `Workflow({scriptPath: "<that path>", resumeFromRunId: "wf_8a2a23fb-8d7"})` if it stalls/errors — same safe/idempotent resume pattern as before.
+- This run covers modules 14 (kit only), 18, 19 (full), and brief tutorial.md-only summaries for 15, 16, 17, 20, 21, 22, 23, 24, 25, 26.
+- **CONFIRMED COMPLETE (2026-07-31)**: verified via directory listing — 01-06 have 10/10 files each; 07/08/09/11/13 have 5 files (tutorial+books+github+references+videos); 10 has 6 (adds architecture.md); 12 has 7 (adds architecture.md+exercises.md); 14 has 7 (tutorial+books+github+references+videos+exercises+projects); 18 and 19 have 4 (tutorial+exercises+references+projects); 15/16/17/20/21/22/23/24/25/26 have 1 file each (tutorial.md only). This matches the rescoped plan exactly.
+
+## STATUS: COURSE COMPLETE per user's revised scope (as of 2026-07-31)
+
+No further batches are needed unless the user asks to expand a brief module (15-17, 20-26) back to full depth, or add missing kit files (quiz/cheat_sheet/architecture/videos/books/github) to 18 or 19. If resuming in a new session, read this file, confirm the file counts above still hold with a fresh directory listing, and treat the course as done unless the user requests more.
+
+## Batch status (historical — superseded by the scope change above for modules 07 onward)
+
+- **Batch 1 (modules 01-06)**: COMPLETE. All 6 modules confirmed 10/10 files on disk after 3 workflow resume attempts (2 transient API disconnects along the way, both recovered via resume). Not yet spot-checked for content quality in this pass beyond the earlier automated verify-phase checks (which flagged content as thorough/real but initially incomplete file-wise — now file-complete). Recommend a quick manual spot-read before fully trusting quality, but proceeding to Batch 2 per user's time pressure.
+  - Run ID: `wf_04de07c5-14d`
+  - Script path: `C:\Users\arl\.claude\projects\C--Users-arl-Music-Tutorial\d7cbe3a0-218e-4cf2-8334-f332dc93d061\workflows\scripts\llmops-course-batch1-wf_04de07c5-14d.js`
+  - To resume/complete if it stopped: `Workflow({scriptPath: "<path above>", resumeFromRunId: "wf_04de07c5-14d"})` — already-completed agent() calls return cached results instantly, only unfinished/new (or previously-failed) ones re-run.
+  - History: 1st attempt (completed) finished module 01 fully (10/10 files). But the "core content" stage (writes tutorial.md + architecture.md) for modules 02, 03, 04, 05, 06 ALL failed with "API Error: Connection closed mid-response" (a transient outage hitting 5 concurrent agents at once, not a prompt/logic bug) — module 03 and 05 got tutorial.md written to disk before the disconnect but not architecture.md, and since the stage call itself errored it is NOT cached, so a resume re-runs it from scratch (fine, Write overwrites). Modules 02/04/06 have nothing beyond their research files (books/github/references/videos). The Course Kit stage never ran for 02-06 since pipeline() drops an item to null (skipping later stages) when a stage throws.
+  - 2nd attempt: completed core+kit for modules 03, 05, 06 (now fully 10/10 files each). Kit stage for 02 and 04 hit ANOTHER transient error ("Response stalled mid-stream") — those two still only have 6/10 files (missing exercises.md/quiz.md/cheat_sheet.md/projects.md). Module 01 confirmed complete (its kit agent correctly detected the files already existed and made no changes — do not worry if a future kit re-run reports "no changes needed" for an already-complete module, that's expected/correct behavior, not a bug).
+  - 3rd attempt launched (task id `w3o7dg6w6`) via the same `Workflow({scriptPath, resumeFromRunId: "wf_04de07c5-14d"})` call to finish just modules 02 and 04's kit files.
+  - **Next step in a new session**: check whether task `w3o7dg6w6` (or the latest run shown in `/workflows`) completed. If the conversation was cut off before its notification arrived, just re-run `Workflow({scriptPath: "C:\Users\arl\.claude\projects\C--Users-arl-Music-Tutorial\d7cbe3a0-218e-4cf2-8334-f332dc93d061\workflows\scripts\llmops-course-batch1-wf_04de07c5-14d.js", resumeFromRunId: "wf_04de07c5-14d"})` again as many times as needed — it is safe/idempotent, cached successes replay instantly and only failures re-run. This workflow has been hitting one or two transient "connection closed / stream stalled" API errors per run — that's expected, just keep resuming until a directory listing shows all 6 module folders with 10/10 files each. Then spot-check 2-3 modules for real (non-fabricated) resources and thorough (non-thin) content, mark Task #1 completed, then launch Batch 2 (see pattern note below).
+
+- **Batch 2 (modules 07-14)**: IN PROGRESS via Workflow tool.
+  - Run ID: `wf_69a00ce3-6bb`
+  - Script path: `C:\Users\arl\.claude\projects\C--Users-arl-Music-Tutorial\d7cbe3a0-218e-4cf2-8334-f332dc93d061\workflows\scripts\llmops-course-batch2-wf_69a00ce3-6bb.js`
+  - To resume/complete if it stopped: `Workflow({scriptPath: "<path above>", resumeFromRunId: "wf_69a00ce3-6bb"})` — same pattern as Batch 1: safe/idempotent, cached successes replay instantly, only unfinished/failed ones re-run. Batch 1 needed 3 resume attempts due to transient "connection closed / stream stalled" API errors — expect this batch may need the same; just keep resuming and re-checking file counts until all 8 modules (07-14) show 10/10 files each in a directory listing.
+  - Source mapping: 07<-module-1/(1,2,3); 08<-module-1/(4,5,6); 09<-module-1/(7,8,9); 10<-module-2/(1,2,3); 11<-module-2/(4,5,6); 12<-module-2/(7,8,9); 13<-module-3/(10,11,12) [experiment-comparison-focused]; 14<-module-3/(10,12) [telemetry/inference-metrics-focused].
+  - **Next step in a new session**: check `/workflows` or directory listing for completion. If incomplete/stalled, resume via the command above (repeat as needed). Once all 8 modules confirmed 10/10 files, mark Task #2 completed and launch Batch 3 (modules 15-21) using the same script pattern (see below) with a fresh MODULES array — 15/16/20/21 are new chapters with no source transcripts (RAG deep dive, vector DBs, orchestration, model serving at scale); 17/18/19 map to module-3/subtitle (13-18).txt.
+
+- **Batch 3 (modules 15-21)**: NOT STARTED. RAG deep dive, vector DBs, agentic systems, tracing/debugging agents, drift detection, orchestration (Airflow/Prefect/Dagster), model serving at scale. Source transcripts: module-3/subtitle (13-18).txt map to modules 17-19 (agent failures/tracing, drift). Modules 15, 16, 20, 21 are new chapters (no direct transcript).
+
+- **Batch 4 (modules 22-26)**: NOT STARTED. Data layer/feature stores, security/governance, cost optimization/FinOps, CI/CD hands-on with GitHub Actions, capstone. All new chapters (no direct transcript).
+
+## Workflow script pattern to reuse for batches 2-4
+
+Same structure as the batch-1 script: a `MODULES` array (dir, title, sourceFiles[], brief), `pipeline(MODULES, researchStage, coreContentStage, courseKitStage)` where each stage is an `agent()` call that writes its own files via the Write tool (research stage writes videos.md/books.md/github.md/references.md and returns a small JSON summary; core stage reads any source transcripts + the research summary and writes tutorial.md + architecture.md; kit stage reads tutorial.md back and writes exercises.md/quiz.md/cheat_sheet.md/projects.md). Followed by a `Verify` phase that spot-checks 2 modules from the batch for real-vs-fabricated resources and thin-vs-thorough content. See the full script text embedded in the Batch 1 Workflow call in this session's transcript, or reconstruct from this pattern — the STYLE_GUIDE and per-module `brief` fields are the main things that change per batch.
+
+## Original transcript source material
+
+`C:\Users\arl\Music\Tutorial\module-0\` through `module-3\`, files named `subtitle (N).txt`. These are ASR transcripts of a 36-lesson "Production LLMOps" video course (12 real topics spoken as "module 1" through "module 12" in the narration — folder names module-0..3 are just download batches, not the real structure). A background survey agent already read and categorized all 36 files early in this session; see the plan file's module list for the mapping of which transcript files back which of the 26 output modules.

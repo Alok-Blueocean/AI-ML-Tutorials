@@ -1,0 +1,21 @@
+# Deep Learning MLOps at Scale — Projects
+
+## Small: Track, Register, and Locally Serve a DL Model with MLflow
+
+Train a small PyTorch Lightning (or Keras) model on any small public dataset with `mlflow.pytorch.autolog()` (or `mlflow.tensorflow.autolog()`) enabled, so parameters, metrics, and the model artifact land in MLflow without manual logging calls. Register the resulting model, assign it a `@champion` alias (not a legacy "Production" stage), and serve it locally with `mlflow models serve -m "models:/<name>@champion"`. Send it a handful of real inference requests and confirm the response matches what the model produces in-process. This proves you understand the full local loop — autologging, registry, alias-based loading, serving the exact registered artifact — before any cloud infrastructure enters the picture.
+
+## Medium: Deploy the Registered Model to a Real SageMaker Endpoint with Autoscaling, and Load-Test It
+
+Take the model registered in the Small project and deploy it to an actual SageMaker real-time endpoint using `mlflow deployments create -t sagemaker` (or the SageMaker Python SDK directly if you prefer more control over the container). Configure target-tracking autoscaling on the endpoint (e.g., scale on `SageMakerVariantInvocationsPerInstance` or GPU utilization), then load-test it with a tool like `locust` or a simple concurrent-request script and observe the endpoint scale out under load and back down afterward. **If you don't want to incur AWS cost by running this live**, write out the exact deployment code (`mlflow deployments create` command with all config options, or the equivalent `sagemaker.Model.deploy(...)` call), the autoscaling policy JSON/SDK call, and a load-test script, and document precisely what each step would do and what you'd expect to observe — note explicitly in your writeup that it was not run live and why. This proves you can take a tracked model past "it works on my laptop" into a production-shaped, autoscaling deployment, and that you understand what a real load test needs to demonstrate (scale-out latency, cold-start behavior, scale-in without dropping in-flight requests).
+
+## Large: Design (and Partially Implement) a DL MLOps Platform for a Hypothetical 5-Team Org
+
+Write a short platform design doc (a few pages) for a hypothetical organization with 5 DL teams sharing infrastructure, covering:
+
+- **Training orchestration**: a SageMaker Pipeline template every team extends — Processing → Training (with managed spot instances and checkpointing) → Evaluation → a Condition step gating registration on a metric threshold.
+- **Versioning and promotion gates**: whether you use the SageMaker Model Registry, MLflow's registry, or both together (e.g., MLflow as the cross-cloud source of truth, SageMaker Model Registry as the AWS-native gate); define the naming convention (team-prefixed model names), who approves an alias/stage promotion, and how you prevent name collisions across teams.
+- **A monitoring/drift plan**: given that SageMaker Model Monitor is no longer open to new customers (verified this session — see `references.md`), specify what you'd actually stand up instead (e.g., a custom CloudWatch-metric-based data-drift check, SageMaker Clarify for bias/feature-attribution drift specifically, or a self-hosted Evidently job) and why.
+- **A documented rollback strategy**: how a bad model version gets caught and reverted within minutes, combining registry-level rollback (reassigning an MLflow alias or de-approving a SageMaker model package) with endpoint-level rollback (SageMaker deployment guardrails' auto-rollback on a CloudWatch alarm).
+- **Cost and endpoint-sprawl controls**: a concrete policy for when a team must use a shared multi-model endpoint vs. when a dedicated endpoint is justified, and how GPU spend is attributed per team for a cost dashboard.
+
+Partially implement at least one piece end-to-end (e.g., the SageMaker Pipeline template with its conditional registration step, or the rollback mechanism as runnable code) rather than leaving the whole thing as prose — this proves you can reason about DL platform governance at the level a staff/principal engineer is expected to, and that at least one design decision survives contact with actual code.

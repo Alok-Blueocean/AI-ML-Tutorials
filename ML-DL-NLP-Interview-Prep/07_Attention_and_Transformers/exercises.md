@@ -1,0 +1,15 @@
+# Exercises — Attention and Transformers
+
+1. **(Easy)** Implement scaled dot-product attention from scratch in NumPy or PyTorch given random Q, K, V matrices, and verify the output shape matches expectations for a batch of sequences.
+2. **(Easy)** Derive why the scaled dot-product attention divides by `√d_k` — show that for random Q, K with unit variance components, `Var(Q·K)` scales with `d_k`, and explain the softmax-saturation consequence of not scaling.
+3. **(Easy)** Explain (in writing, no code) why self-attention alone is permutation-invariant, using a concrete 3-token example with the tokens swapped.
+4. **(Easy-Medium)** Implement sinusoidal positional encoding from scratch and plot the resulting encoding matrix as a heatmap for a sequence length of 50 and embedding dimension of 64.
+5. **(Medium)** Extend your scaled dot-product attention implementation to multi-head attention (split into `h` heads, run attention per head, concatenate, project). Verify against `torch.nn.MultiheadAttention` output shape and (optionally) numerical output given matched weights.
+6. **(Medium)** Implement causal (look-ahead) masking for a decoder's self-attention and show, with a small example, that a later token cannot influence an earlier token's output.
+7. **(Medium)** Build a minimal Transformer encoder block (self-attention + residual + layer norm + feed-forward + residual + layer norm) from scratch in PyTorch, and verify it can be stacked N times without shape errors.
+8. **(Medium)** Compare layer normalization and batch normalization mathematically (what axis each normalizes over) and explain, with an example involving variable-length padded sequences, why layer norm is preferred in Transformers.
+9. **(Medium-Hard)** Compute and compare the theoretical FLOPs/memory of self-attention (`O(n²·d)`) vs. an LSTM (`O(n·d²)`) for a sequence length of 10, 100, 1,000, and 10,000 tokens at `d=512`. At what sequence length does attention's quadratic cost overtake the LSTM's linear cost?
+10. **(Medium-Hard)** Fine-tune a small pretrained Transformer (e.g., `distilbert-base-uncased` via Hugging Face) on a text classification dataset (e.g., IMDB sentiment or AG News) and report accuracy vs. a from-scratch LSTM baseline on the same data.
+11. **(Hard)** Implement a minimal encoder-decoder Transformer (following "The Annotated Transformer") for a toy sequence-to-sequence task (e.g., reversing digit sequences, or a synthetic copy task), including masked decoder self-attention and encoder-decoder cross-attention.
+12. **(Hard)** Explain and, if time permits, implement a simple sliding-window or block-sparse attention pattern, and describe how it reduces the `O(n²)` cost — what long-range interactions does it sacrifice?
+13. **(Hard)** Derive the parameter count of a single Transformer encoder block given `d_model`, number of heads `h`, and feed-forward dimension `d_ff`; use it to estimate the total parameter count of a 12-layer, 768-dim, 12-head, 3072-ff encoder (i.e., BERT-base-sized) and compare to the real BERT-base parameter count (~110M).
